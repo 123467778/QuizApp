@@ -20,14 +20,14 @@ public class QuizService {
 	@Autowired
 	QuizDao quizDao;
 	//Creating a Quiz
-	public ResponseEntity<String> createQuiz( String category,int numQ, String title) {
+	public Integer createQuiz( String category,int numQ, String title) {
 		Quiz quiz =new Quiz();
 		List<Question>question = questionDao.findRandomQuestion(category,numQ);
 		
 		quiz.setTitle(title);
 		quiz.setQuestion(question);
 		quizDao.save(quiz);
-		return  new ResponseEntity<>("success",HttpStatus.CREATED);
+		return  quiz.getId();
 	}
 	//Fetching QuizQuestions
 	public ResponseEntity<List<QuestionWrapper>> getQuizQuestions(Integer id) {
