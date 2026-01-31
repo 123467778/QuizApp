@@ -2,12 +2,11 @@ package com.example.QuizApp;
 
 import java.util.List;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.*;
+import lombok.Data;
+
 @Entity
+@Data
 public class Quiz {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -18,6 +17,12 @@ public class Quiz {
 	
 	@ManyToMany
 	private List<Question> question;
+
+	@ManyToOne
+	private User user;
+
+	private int score;
+
 
 	public String getTitle() {
 		return title;
@@ -42,8 +47,20 @@ public class Quiz {
 	public void setQuestion(List<Question> question) {
 		this.question = question;
 	}
-	
-	
-	
+
+public int getScore(){
+		return score;
+}
+
+public void setScore(int score){
+		this.score=score;
+}
+
+     public User getUser(){
+		return user;
+      }
+	public void setUser(User user){
+		this.user=user;
+	}
 
 }

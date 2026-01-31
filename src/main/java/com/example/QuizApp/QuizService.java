@@ -1,8 +1,7 @@
 package com.example.QuizApp;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -42,19 +41,60 @@ public class QuizService {
 	}
 	
 	//Calculating Quiz Result
-	public ResponseEntity<Integer> calculateResult(Integer id,List< Response> response) {
+	public ResponseEntity<Integer> calculateResult(Integer id,List< Response> response,User user) {
 	Quiz quiz =quizDao.findById(id).get();
 	List<Question>questions=quiz.getQuestion();
 	int right=0;
-	int i=0;
-	for(Response responses:response) {
-		if(responses.getResponse().equals(questions.get(i).getRightAnswer())) {
-			right++;
-			i++;
+//	int i=0;
+//	for(Response responses:response) {
+//		if(responses.getResponse().equals(questions.get(i).getRightAnswer())) {
+//			right++;
+//			i++;
+//		}
+//
+//	}
+		for(int i=0;i<response.size();i++){
+			if(response.get(i).getResponse().equals(questions.get(i).getRightAnswer())){
+				right++;
+			}
 		}
-			
-	}
+
+	quiz.setScore(right);
+	quiz.setUser(user);
+	quizDao.save(quiz);
+
 	  return new ResponseEntity<Integer>(right,HttpStatus.OK);
 	}
-    
+
+
+
+	//Leaders Board
+public  List<LeaderBoardEntry> getLeaderBoard(){
+		List<Quiz> quizzes =quizDao.findAll();
+
+		//Map users -> highest scores
+
+	Map<Integer,LeaderBoardEntry> userMaxScores =new HashMap<>();
+	for(Quiz q :quizzes){
+		User user =q.getUser();
+		int score =q.getScore();
+
+		if(user==null) continue;
+
+		if(userMaxScores.containsKey(user.getId())){
+			LeaderBoardEntry entry=userMaxScores.get(user.getId());
+			entry.setScore(Math.max(entry.getScore(),score));
+		}
+		else{
+			userMaxScores.put(user.getId(),new LeaderBoardEntry(user.getUsername(),score));
+		}
+
+
+
+
+	}
+	return userMaxScores.values().stream().sorted((a,b)->b.getScore()-a.getScore()).collect(Collectors.toList());
+
+}
+
 }

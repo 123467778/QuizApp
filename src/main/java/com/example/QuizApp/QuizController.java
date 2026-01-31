@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin("*")
 public class QuizController {
 	@Autowired
-	QuizService quizService;
+    QuizService quizService;
+
+	@Autowired
+	private UserRepository userRepository;
 	
 	@PostMapping("create")
 	
@@ -26,8 +29,11 @@ public class QuizController {
 		return quizService.getQuizQuestions(id);
 	}
 	@PostMapping("submit/{id}")
-	public ResponseEntity<Integer>submitQuiz(@PathVariable Integer id,@RequestBody List< Response> response){
-		return quizService.calculateResult(id,response);
+	public ResponseEntity<Integer>submitQuiz(@PathVariable Integer id,@RequestBody List<Response> response,@RequestParam Integer userId){
+
+		User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("User not found.."));
+
+		return quizService.calculateResult(id,response,user);
 	}
 	
 }
