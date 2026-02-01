@@ -24,6 +24,7 @@ public class Question {
 	private String rightAnswer;
 	private String difficultyLevel;
 	private String category;
+	private String concept;
 	public Integer getId() {
 		return id;
 	}
@@ -77,6 +78,14 @@ public class Question {
 	}
 	public void setCategory(String category) {
 		this.category = category;
+	}
+
+
+	public String getConcept() {
+		return concept;
+	}
+	public void setConcept(String concept) {
+		this.concept= concept;
 	}
 
 	

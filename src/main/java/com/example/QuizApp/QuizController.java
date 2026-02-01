@@ -1,6 +1,8 @@
 package com.example.QuizApp;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,12 +30,38 @@ public class QuizController {
 	public ResponseEntity<List<QuestionWrapper>>getQuizQuestions (@PathVariable Integer id){
 		return quizService.getQuizQuestions(id);
 	}
+//	@PostMapping("submit/{id}")
+//	public ResponseEntity<Integer>submitQuiz(@PathVariable Integer id,@RequestBody List<Response> response,@RequestParam Integer userId){
+//
+//		User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("User not found.."));
+//
+//		return quizService.calculateResult(id,response,user);
+//	}
+
 	@PostMapping("submit/{id}")
-	public ResponseEntity<Integer>submitQuiz(@PathVariable Integer id,@RequestBody List<Response> response,@RequestParam Integer userId){
+	public ResponseEntity<Map<String, Object>> submitQuiz(
+			@PathVariable Integer id,
+			@RequestBody List<Response> responses,
+			@RequestParam Integer userId) {
 
-		User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("User not found.."));
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new RuntimeException("User not found"));
 
-		return quizService.calculateResult(id,response,user);
+		// Calculate score
+		ResponseEntity<Integer> scoreResponse = quizService.calculateResult(id, responses, user);
+		int score = scoreResponse.getBody();
+
+		// Calculate weak concepts
+		List<Map<String, Object>> weakConcepts = quizService.getWeakConcepts(user, id, responses);
+
+		// Prepare response for frontend
+		Map<String, Object> result = new HashMap<>();
+		result.put("score", score);
+		result.put("totalQuestions", responses.size());
+		result.put("weakConcepts", weakConcepts);
+
+		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	
+
+
 }

@@ -18,7 +18,7 @@ public class UserService {
             throw new IllegalArgumentException("Email is required");
 
         }
-        if(!user.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")){
+        if(!user.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")){
             throw  new IllegalArgumentException("Invalid email Format");
         }
 

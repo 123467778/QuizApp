@@ -69,32 +69,112 @@ public class QuizService {
 
 
 	//Leaders Board
-public  List<LeaderBoardEntry> getLeaderBoard(){
-		List<Quiz> quizzes =quizDao.findAll();
+//public  List<LeaderBoardEntry> getLeaderBoard(){
+//		List<Quiz> quizzes =quizDao.findAll();
+//
+//		//Map users -> highest scores
+//
+//	Map<Integer,LeaderBoardEntry> userMaxScores =new HashMap<>();
+//	for(Quiz q :quizzes){
+//		User user =q.getUser();
+//		int score =q.getScore();
+//
+//		if(user==null) continue;
+//
+//		if(userMaxScores.containsKey(user.getId())){
+//			LeaderBoardEntry entry=userMaxScores.get(user.getId());
+//			entry.setScore(Math.max(entry.getScore(),score));
+//		}
+//		else{
+//			userMaxScores.put(user.getId(),new LeaderBoardEntry(user.getUsername(),score));
+//		}
+//
+//
+//
+//
+//	}
+//	return userMaxScores.values().stream().sorted((a,b)->b.getScore()-a.getScore()).collect(Collectors.toList());
+//
+//}
 
-		//Map users -> highest scores
 
-	Map<Integer,LeaderBoardEntry> userMaxScores =new HashMap<>();
-	for(Quiz q :quizzes){
-		User user =q.getUser();
-		int score =q.getScore();
 
-		if(user==null) continue;
+	//Leaders Board
 
-		if(userMaxScores.containsKey(user.getId())){
-			LeaderBoardEntry entry=userMaxScores.get(user.getId());
-			entry.setScore(Math.max(entry.getScore(),score));
+	public List<LeaderBoardEntry> getLeaderBoard() {
+
+		List<Quiz> quizzes = quizDao.findAll();
+
+		// userId -> LeaderBoardEntry (total score)
+		Map<Integer, LeaderBoardEntry> userTotalScores = new HashMap<>();
+
+		for (Quiz q : quizzes) {
+			User user = q.getUser();
+			int score = q.getScore();
+
+			if (user == null) continue;
+
+			if (userTotalScores.containsKey(user.getId())) {
+				LeaderBoardEntry entry = userTotalScores.get(user.getId());
+				entry.setScore(entry.getScore() + score); // SUM
+			} else {
+				userTotalScores.put(
+						user.getId(),
+						new LeaderBoardEntry(user.getUsername(), score)
+				);
+			}
 		}
-		else{
-			userMaxScores.put(user.getId(),new LeaderBoardEntry(user.getUsername(),score));
+
+		// sort by total score DESC
+		return userTotalScores.values()
+				.stream()
+				.sorted((a, b) -> b.getScore() - a.getScore())
+				.collect(Collectors.toList());
+	}
+
+
+	//calculate Weak concept
+
+	public List<Map<String,Object>> getWeakConcepts(User user ,Integer quizId,List<Response> response){
+		//fetch quiz
+		Quiz quiz =quizDao.findById(quizId).orElseThrow(()->new RuntimeException("Quiz not found"));
+		// get all questions in quiz
+		List<Question> questions=quiz.getQuestion();
+
+		//map to track wrong answer
+		Map<String ,Integer> conceptMistakes = new HashMap<>();
+
+
+		//loop through response and compare with correct answers
+		for(int i=0;i<response.size();i++){
+			Response r =response.get(i);
+			Question q =questions.get(i);
+
+			//If answer wrong
+			if(!r.getResponse().equals(q.getRightAnswer())){
+				String concept =q.getConcept();
+				conceptMistakes.put(concept,conceptMistakes.getOrDefault(concept,0)+1);
+			}
 		}
+
+		//Convert map to list for frontend
+
+		List<Map<String,Object>> weakConcepts=new ArrayList<>();
+		for(Map.Entry<String,Integer>entry :conceptMistakes.entrySet()){
+			Map<String,Object> map=new HashMap<>();
+			map.put("concept",entry.getKey());
+			map.put("WrongConcept",entry.getValue());
+			weakConcepts.add(map);
+		}
+
+		return  weakConcepts;
+
+
+
 
 
 
 
 	}
-	return userMaxScores.values().stream().sorted((a,b)->b.getScore()-a.getScore()).collect(Collectors.toList());
-
-}
 
 }
