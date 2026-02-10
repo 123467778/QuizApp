@@ -15,16 +15,21 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin("*")
 public class QuizController {
 	@Autowired
-    QuizService quizService;
+  private  QuizService quizService;
 
 	@Autowired
 	private UserRepository userRepository;
 	
 	@PostMapping("create")
 	
-     public ResponseEntity<Integer>createQuiz(@RequestParam String category,@RequestParam int  numQ, @RequestParam String title){
-		Integer quizId=quizService.createQuiz(category,numQ,title);
-		return new ResponseEntity<>(quizId, HttpStatus.CREATED);
+     public ResponseEntity<?>createQuiz(@RequestParam String category,@RequestParam int  numQ, @RequestParam String title){
+		try{
+			Integer quizId=quizService.createQuiz(category,numQ,title);
+			return new ResponseEntity<>(quizId, HttpStatus.CREATED);
+		}
+		catch (IllegalArgumentException e){
+			return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+		}
 	}
 	@GetMapping("/get/{id}")
 	public ResponseEntity<List<QuestionWrapper>>getQuizQuestions (@PathVariable Integer id){

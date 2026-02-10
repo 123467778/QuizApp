@@ -20,8 +20,18 @@ public class QuizService {
 	QuizDao quizDao;
 	//Creating a Quiz
 	public Integer createQuiz( String category,int numQ, String title) {
+		if(category==null || category.trim().isEmpty()){
+			throw new RuntimeException("Category must be selected");
+		}
+
+		if(numQ<=0){
+			throw new IllegalArgumentException("Number of Question should be greater than 0");
+		}
 		Quiz quiz =new Quiz();
 		List<Question>question = questionDao.findRandomQuestion(category,numQ);
+		if(question.isEmpty()){
+			throw new IllegalArgumentException("No questions available for this category");
+		}
 		
 		quiz.setTitle(title);
 		quiz.setQuestion(question);
